@@ -27,7 +27,7 @@ const HomePage: React.FC = () => {
 
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:4000/api/rooms', {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URI}/api/rooms`, {
         method: 'POST',
       });
 
