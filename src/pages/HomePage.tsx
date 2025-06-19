@@ -3,25 +3,42 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PartyPopper } from 'lucide-react';
 
+type VideoInfo = {
+  source: 'youtube' | 'gdrive' | 'unknown';
+  id: string | null;
+};
+
+const parseVideoUrl = (url: string): VideoInfo => {
+  const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+  const ytMatch = url.match(ytRegex);
+  if (ytMatch && ytMatch[1]) {
+    return { source: 'youtube', id: ytMatch[1] };
+  }
+
+  const gdRegex = /drive\.google\.com\/(?:file\/d\/|open\?id=)([a-zA-Z0-9_-]+)/;
+  const gdMatch = url.match(gdRegex);
+  if (gdMatch && gdMatch[1]) {
+    const fileId = gdMatch[1];
+    const embedLink = `https://drive.google.com/file/d/${fileId}/preview`;
+    return { source: 'gdrive', id: embedLink };
+  }
+
+  return { source: 'unknown', id: null };
+};
+
 const HomePage: React.FC = () => {
-  const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [videoUrl, setVideoUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const extractVideoId = (url: string): string | null => {
-    const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
-    const match = url.match(regex);
-    return match ? match[1] ?? null : null;
-  };
-
   const handleCreateRoom = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    const videoId = extractVideoId(youtubeUrl);
-    
-    if (!videoId) {
-      setError('Please enter a valid YouTube URL.');
+
+    const videoInfo = parseVideoUrl(videoUrl);
+    if (videoInfo.source === 'unknown' || !videoInfo.id) {
+      setError('Please enter a valid YouTube or Google Drive URL.');
       return;
     }
 
@@ -32,9 +49,14 @@ const HomePage: React.FC = () => {
       });
 
       if (!response.ok) throw new Error('Failed to create room on the server.');
-      
+
       const { roomId } = await response.json();
-      navigate(`/room/${roomId}?videoId=${videoId}`);
+      const searchParams = new URLSearchParams({
+        source: videoInfo.source,
+        id: videoInfo.id,
+      }).toString();
+
+      navigate(`/room/${roomId}?${searchParams}`);
     } catch (err) {
       setError('Could not create a room. Please try again later.');
       console.error(err);
@@ -48,14 +70,14 @@ const HomePage: React.FC = () => {
       <PartyPopper size={64} className="text-purple-400 mb-4" />
       <h1 className="text-4xl md:text-6xl font-bold mb-2">Watch Together</h1>
       <p className="text-lg text-gray-400 mb-8 max-w-xl">
-        Paste any YouTube link to create a private room and watch videos in sync with your friends.
+        Paste a YouTube or Google Drive link to create a private room and watch videos in sync with your friends.
       </p>
       <form onSubmit={handleCreateRoom} className="w-full max-w-xl flex flex-col sm:flex-row gap-2">
         <input
           type="text"
-          value={youtubeUrl}
-          onChange={(e) => setYoutubeUrl(e.target.value)}
-          placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+          value={videoUrl}
+          onChange={(e) => setVideoUrl(e.target.value)}
+          placeholder="Paste YouTube or Google Drive link here..."
           className="flex-grow p-3 bg-gray-800 border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
           disabled={isLoading}
         />
