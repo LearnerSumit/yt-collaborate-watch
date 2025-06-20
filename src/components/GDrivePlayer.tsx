@@ -1,4 +1,4 @@
-import { Play, Pause, Volume2, VolumeX, Maximize, Settings, Rewind, FastForward } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Maximize, Settings} from 'lucide-react';
 import type { VideoState } from '../types';
 import { useEffect, useRef, useState } from 'react';
 

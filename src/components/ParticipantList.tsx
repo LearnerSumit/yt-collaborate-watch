@@ -33,8 +33,6 @@ const ParticipantList: React.FC<ParticipantListProps> = ({
   joinVoiceChat,
   leaveVoiceChat,
   onSendReaction,
-  isMuted,
-  onToggleMute,
   blockedUserIds,
   onBlockUser,
   onUnblockUser,
