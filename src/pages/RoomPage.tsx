@@ -113,11 +113,11 @@ const RoomPage: React.FC = () => {
         {isChatOpen ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
       </button>
 
-      <main className="flex-1 min-w-0 flex flex-col p-4">
+      <main className="flex-1 flex flex-col p-4">
         {/* 👇 Main content area split into 2 sections: video and fixed-height participants */}
-        <div className="flex flex-col flex-1 min-h-0">
+        <div className="flex flex-col flex-1">
           {/* 👇 Video player takes all available space, emojis float on top */}
-          <div className="relative flex-1 min-h-0">
+          <div className="relative flex-1">
             <VideoPlayer
               currentVideo={currentVideo}
               ytPlayerRef={ytPlayerRef}
@@ -130,7 +130,7 @@ const RoomPage: React.FC = () => {
           </div>
 
           {/* 👇 Fixed height participant list - no scroll, no overlap */}
-          <div className="h-28 sm:h-32 md:h-36 lg:h-40 xl:h-48 overflow-y-auto">
+          <div className="h-28 sm:h-32 md:h-36 lg:h-40 xl:h-48">
             <ParticipantList
               users={users}
               currentUser={currentUser}
