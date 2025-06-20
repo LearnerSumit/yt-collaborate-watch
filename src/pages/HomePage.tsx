@@ -1,42 +1,21 @@
-// src/pages/HomePage.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PartyPopper } from 'lucide-react';
-
-type VideoInfo = {
-  source: 'youtube' | 'gdrive' | 'unknown';
-  id: string | null;
-};
-
-const parseVideoUrl = (url: string): VideoInfo => {
-  const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
-  const ytMatch = url.match(ytRegex);
-  if (ytMatch && ytMatch[1]) {
-    return { source: 'youtube', id: ytMatch[1] };
-  }
-
-  const gdRegex = /drive\.google\.com\/(?:file\/d\/|open\?id=)([a-zA-Z0-9_-]+)/;
-  const gdMatch = url.match(gdRegex);
-  if (gdMatch && gdMatch[1]) {
-    const fileId = gdMatch[1];
-    const embedLink = `https://drive.google.com/file/d/${fileId}/preview`;
-    return { source: 'gdrive', id: embedLink };
-  }
-
-  return { source: 'unknown', id: null };
-};
-
+import { parseVideoUrl } from '../utils/video'; 
 const HomePage: React.FC = () => {
   const [videoUrl, setVideoUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  // The parseVideoUrl function is now gone from here!
+
   const handleCreateRoom = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
+    // We now use the imported function
     const videoInfo = parseVideoUrl(videoUrl);
+
     if (videoInfo.source === 'unknown' || !videoInfo.id) {
       setError('Please enter a valid YouTube or Google Drive URL.');
       return;
@@ -51,12 +30,14 @@ const HomePage: React.FC = () => {
       if (!response.ok) throw new Error('Failed to create room on the server.');
 
       const { roomId } = await response.json();
+      
       const searchParams = new URLSearchParams({
         source: videoInfo.source,
         id: videoInfo.id,
       }).toString();
 
       navigate(`/room/${roomId}?${searchParams}`);
+
     } catch (err) {
       setError('Could not create a room. Please try again later.');
       console.error(err);
@@ -66,8 +47,8 @@ const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
-      <PartyPopper size={64} className="text-purple-400 mb-4" />
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center bg-gray-900 text-white">
+      <img src="/party.png" alt="Watch Together" className="w-20 h-20 mb-4" />
       <h1 className="text-4xl md:text-6xl font-bold mb-2">Watch Together</h1>
       <p className="text-lg text-gray-400 mb-8 max-w-xl">
         Paste a YouTube or Google Drive link to create a private room and watch videos in sync with your friends.

@@ -16,3 +16,54 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #718096; /* gray-500 */
 }
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+@keyframes fade-in-out {
+  0% {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  15% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  85% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+}
+
+.animate-fade-in-out {
+  animation: fade-in-out 5s ease-in-out forwards;
+}
+
+/* Jab player container fullscreen ho... */
+.player-container:fullscreen .custom-controls {
+  /* ...to hamare custom controls ko zabardasti visible rakho */
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Aur browser ke default video controls ko hamesha ke liye chhupa do */
+video::-webkit-media-controls {
+  display: none !important;
+}
+video::-webkit-media-controls-enclosure {
+  display: none !important;
+}
+video::-webkit-media-controls-panel {
+  display: none !important;
+}
