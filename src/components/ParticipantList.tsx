@@ -85,9 +85,7 @@ const ParticipantList: React.FC<ParticipantListProps> = ({
 
   return (
     <div
-      className={`bg-gray-800/50 p-3 rounded-lg transition-all duration-300 ${
-        !isChatOpen ? "mt-0 lg:-mt-6" : "mt-4"
-      }`}
+      className={`bg-gray-800/50 p-3 rounded-lg transition-all duration-300`}
     >
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold text-white">
