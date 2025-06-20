@@ -183,7 +183,11 @@ const RoomPage: React.FC = () => {
           border-gray-700
         `}
       >
-        <ChatSidebar messages={messages} onSendMessage={handleSendMessage} />
+        <ChatSidebar
+          messages={messages}
+          onSendMessage={handleSendMessage}
+          currentUser={currentUser!}
+        />
       </div>
     </div>
   );
