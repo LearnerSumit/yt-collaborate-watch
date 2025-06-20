@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from "react"; // <-- Import useState
+import React, { useState, useRef, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { ChevronLeft, ChevronRight } from "lucide-react"; // <-- Icons for the toggle button
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-// Import BOTH hooks
+// Import hooks
 import { useRoom } from "../hooks/useRoom";
 import { useVoiceChat } from "../hooks/useVoiceChat";
 
@@ -15,10 +15,10 @@ import ChatSidebar from "../components/ChatSidebar";
 const RoomPage: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
 
-  // --- NEW: State to manage the chat sidebar visibility ---
+  // State to manage the chat sidebar visibility
   const [isChatOpen, setIsChatOpen] = useState(true);
 
-  // --- Hook 1: For Room State (Video, Chat, Users list) ---
+  // Hook for Room State (Video, Chat, Users list)
   const {
     users,
     messages,
@@ -33,7 +33,7 @@ const RoomPage: React.FC = () => {
     setIsSyncing,
   } = useRoom(roomId);
 
-  // --- Hook 2: For Voice Chat Logic ---
+  // Hook for Voice Chat Logic
   const {
     isInVoiceChat,
     isMuted,
@@ -48,35 +48,24 @@ const RoomPage: React.FC = () => {
   const ytPlayerRef = useRef<any>(null);
   const gdrivePlayerRef = useRef<HTMLVideoElement>(null);
 
-  //
-
+  // Effect for syncing player state
   useEffect(() => {
-    // STEP 1: Agar sync mode 'false' hai, toh kuch na karein.
-    // Iska matlab user abhi player ko control kar raha hai, ya koi server update nahi hai.
     if (!isSyncing || !currentVideo) {
       return;
     }
-
-    const syncTolerance = 1.5; // seconds. Itna difference aam hai, isse zyada par sync hoga.
-
-    // STEP 2: Player ke source ke hisaab se logic chalao.
+    const syncTolerance = 1.5;
     switch (currentVideo.source) {
       case "youtube":
-        // Pehle check karo ki player ready hai ya nahi.
         if (
           ytPlayerRef.current &&
           typeof ytPlayerRef.current.getPlayerState === "function"
         ) {
           const player = ytPlayerRef.current;
-
-          // Logic 1: Time Sync (Seek)
           const playerCurrentTime = player.getCurrentTime() || 0;
           if (Math.abs(playerCurrentTime - videoState.time) > syncTolerance) {
             player.seekTo(videoState.time, true);
           }
-
-          // Logic 2: Play/Pause Sync (hamesha check hoga)
-          const playerState = player.getPlayerState(); // 1: Playing, 2: Paused
+          const playerState = player.getPlayerState();
           if (videoState.isPlaying && playerState !== 1) {
             player.playVideo();
           } else if (!videoState.isPlaying && playerState !== 2) {
@@ -84,18 +73,12 @@ const RoomPage: React.FC = () => {
           }
         }
         break;
-
       case "gdrive":
-        // Pehle check karo ki player ready hai ya nahi.
         if (gdrivePlayerRef.current) {
           const player = gdrivePlayerRef.current;
-
-          // Logic 1: Time Sync (Seek)
           if (Math.abs(player.currentTime - videoState.time) > syncTolerance) {
             player.currentTime = videoState.time;
           }
-
-          // Logic 2: Play/Pause Sync (hamesha check hoga)
           if (videoState.isPlaying && player.paused) {
             player
               .play()
@@ -105,40 +88,39 @@ const RoomPage: React.FC = () => {
           }
         }
         break;
-
       default:
         break;
     }
-
-    // STEP 3: SABSE ZAROORI - Sync command dene ke baad, sync mode ko 'false' par reset karein.
-    // Isse player wapas user ke control mein aa jaata hai.
     const timer = setTimeout(() => {
       setIsSyncing(false);
-    }, 200); // 200ms ka buffer taaki player command process karle.
-
-    // Cleanup function
+    }, 200);
     return () => clearTimeout(timer);
-  }, [videoState, currentVideo, isSyncing, setIsSyncing]); // Saari zaroori dependencies
+  }, [videoState, currentVideo, isSyncing, setIsSyncing]);
 
   return (
-    // Add `relative` to the main container to position the toggle button
-    <div className="relative flex flex-col lg:flex-row gap-3 h-screen max-h-screen bg-gray-900 text-white overflow-hidden">
-      {/* --- NEW: Button to toggle the chat sidebar --- */}
+    // Main container - gap removed for better control
+    <div className="relative flex flex-col lg:flex-row h-screen max-h-screen bg-gray-900 text-white overflow-hidden">
+      {/* Sidebar Toggle Button - No changes needed here */}
       <button
         onClick={() => setIsChatOpen(!isChatOpen)}
         className={`
           absolute top-1/2 -translate-y-1/2 z-20 p-2 
           bg-gray-700 hover:bg-purple-600 text-white rounded-l-md transition-all duration-300
-          hidden lg:block // Only show on large screens
+          hidden lg:block
           ${isChatOpen ? "right-[20rem] xl:right-[24rem]" : "right-0"}
         `}
-        // The `right` values match the sidebar width (w-80=20rem, w-96=24rem)
       >
         {isChatOpen ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
       </button>
 
-      {/* Left Side: Video Player and Participant List (this will auto-expand) */}
-      <div className="flex-grow flex flex-col p-4 gap-4">
+      {/* 
+        FIX 1: Main Content Area (Video + Participants)
+        - Changed to <main> tag for better HTML structure.
+        - Replaced `flex-grow` with `flex-1 min-w-0`. This is the most important fix.
+        - `flex-1` makes it take up all available space.
+        - `min-w-0` allows it to shrink properly when the sidebar is open, preventing overflow on any screen size.
+      */}
+      <main className="flex-1 min-w-0 flex flex-col p-4 gap-2">
         <div className="player-container relative flex-grow min-h-0">
           <VideoPlayer
             currentVideo={currentVideo}
@@ -167,14 +149,18 @@ const RoomPage: React.FC = () => {
             isChatOpen={isChatOpen}
           />
         </div>
-      </div>
+      </main>
 
-      {/* Right Side: Collapsible Chat Sidebar */}
-      <div
+      {/* 
+        FIX 2: Right Side: Collapsible Chat Sidebar 
+        - Changed to <aside> tag for better HTML structure.
+        - The existing class logic works perfectly with the fix in the main content area.
+      */}
+      <aside
         className={`
           flex-shrink-0 h-1/2 lg:h-full
           transition-all duration-500 ease-in-out
-          overflow-hidden // Hide content when shrinking
+          overflow-hidden
           ${
             isChatOpen
               ? "w-full lg:w-80 xl:w-96 border-t-2 lg:border-t-0 lg:border-l-2"
@@ -188,7 +174,7 @@ const RoomPage: React.FC = () => {
           onSendMessage={handleSendMessage}
           currentUser={currentUser!}
         />
-      </div>
+      </aside>
     </div>
   );
 };
