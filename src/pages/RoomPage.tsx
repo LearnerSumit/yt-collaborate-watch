@@ -113,49 +113,41 @@ const RoomPage: React.FC = () => {
         {isChatOpen ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
       </button>
 
-      {/* 
-        FIX 1: Main Content Area (Video + Participants)
-        - Changed to <main> tag for better HTML structure.
-        - Replaced `flex-grow` with `flex-1 min-w-0`. This is the most important fix.
-        - `flex-1` makes it take up all available space.
-        - `min-w-0` allows it to shrink properly when the sidebar is open, preventing overflow on any screen size.
-      */}
       <main className="flex-1 min-w-0 flex flex-col p-4 gap-2">
-        <div className="player-container relative flex-grow min-h-0">
-          <VideoPlayer
-            currentVideo={currentVideo}
-            ytPlayerRef={ytPlayerRef}
-            gdrivePlayerRef={
-              gdrivePlayerRef as React.RefObject<HTMLVideoElement>
-            }
-            onPlayerStateChange={handlePlayerStateChange}
-          />
-          <FloatingEmojis reactions={reactions} />
-        </div>
+        {/* 👇 Main content area split into 2 sections: video and fixed-height participants */}
+        <div className="flex flex-col flex-1 min-h-0 gap-2">
+          {/* 👇 Video player takes all available space, emojis float on top */}
+          <div className="relative flex-1 min-h-0">
+            <VideoPlayer
+              currentVideo={currentVideo}
+              ytPlayerRef={ytPlayerRef}
+              gdrivePlayerRef={
+                gdrivePlayerRef as React.RefObject<HTMLVideoElement>
+              }
+              onPlayerStateChange={handlePlayerStateChange}
+            />
+            <FloatingEmojis reactions={reactions} />
+          </div>
 
-        <div className={`${isChatOpen ? "" : "mt-auto"}`}>
-          <ParticipantList
-            users={users}
-            currentUser={currentUser}
-            isInVoiceChat={isInVoiceChat}
-            isMuted={isMuted}
-            joinVoiceChat={joinVoiceChat}
-            leaveVoiceChat={leaveVoiceChat}
-            onToggleMute={toggleMute}
-            onSendReaction={handleSendReaction}
-            blockedUserIds={blockedUserIds}
-            onBlockUser={blockUserAudio}
-            onUnblockUser={unblockUserAudio}
-            isChatOpen={isChatOpen}
-          />
+          {/* 👇 Fixed height participant list - no scroll, no overlap */}
+          <div className="h-28 sm:h-32 md:h-36 lg:h-40 xl:h-48">
+            <ParticipantList
+              users={users}
+              currentUser={currentUser}
+              isInVoiceChat={isInVoiceChat}
+              isMuted={isMuted}
+              joinVoiceChat={joinVoiceChat}
+              leaveVoiceChat={leaveVoiceChat}
+              onToggleMute={toggleMute}
+              onSendReaction={handleSendReaction}
+              blockedUserIds={blockedUserIds}
+              onBlockUser={blockUserAudio}
+              onUnblockUser={unblockUserAudio}
+              isChatOpen={isChatOpen}
+            />
+          </div>
         </div>
       </main>
-
-      {/* 
-        FIX 2: Right Side: Collapsible Chat Sidebar 
-        - Changed to <aside> tag for better HTML structure.
-        - The existing class logic works perfectly with the fix in the main content area.
-      */}
       <aside
         className={`
           flex-shrink-0 h-1/2 lg:h-full
